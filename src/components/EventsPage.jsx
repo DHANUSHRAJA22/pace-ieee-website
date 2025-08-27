@@ -1,217 +1,200 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { events } from '../utils/events';
 
-// EventsPage Component with responsive grid-based event cards
 const EventsPage = () => {
-  // Placeholder event data
-  const sampleEvents = [
-    {
-      id: 1,
-      title: "React Workshop for Beginners",
-      date: "2025-09-15",
-      time: "10:00 AM - 4:00 PM",
-      description: "Learn the fundamentals of React development with hands-on exercises and real-world projects.",
-      status: "upcoming",
-      type: "workshop"
-    },
-    {
-      id: 2,
-      title: "IEEE Technical Seminar Series",
-      date: "2025-09-22",
-      time: "2:00 PM - 5:00 PM",
-      description: "Industry experts sharing insights on emerging technologies and career opportunities in tech.",
-      status: "upcoming",
-      type: "seminar"
-    },
-    {
-      id: 3,
-      title: "Coding Competition - CodeStorm 2025",
-      date: "2025-10-05",
-      time: "9:00 AM - 6:00 PM",
-      description: "Annual programming contest with exciting prizes and networking opportunities.",
-      status: "upcoming",
-      type: "competition"
-    },
-    {
-      id: 4,
-      title: "Web Development Bootcamp",
-      date: "2025-08-20",
-      time: "10:00 AM - 6:00 PM",
-      description: "Intensive full-stack web development training covering modern frameworks and best practices.",
-      status: "completed",
-      type: "workshop"
-    },
-    {
-      id: 5,
-      title: "AI & Machine Learning Symposium",
-      date: "2025-08-10",
-      time: "1:00 PM - 7:00 PM",
-      description: "Exploring the latest trends in artificial intelligence and machine learning applications.",
-      status: "completed",
-      type: "seminar"
-    }
-  ];
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const currentDate = new Date();
 
-  // Get status badge color classes
+  const getFilteredEvents = () => {
+    switch (activeFilter) {
+      case 'upcoming': return events.filter(event => new Date(event.date) >= currentDate);
+      case 'past': return events.filter(event => new Date(event.date) < currentDate);
+      case 'all':
+      default: return events;
+    }
+  };
+
+  const filteredEvents = getFilteredEvents();
+  const handleFilterClick = (filter) => setActiveFilter(filter);
+  const handleEventClick = (event) => { setSelectedEvent(event); setIsModalOpen(true); };
+  const closeModal = () => { setIsModalOpen(false); setSelectedEvent(null); };
+
   const getStatusBadgeClass = (status) => {
-    switch (status) {
-      case 'upcoming':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'ongoing':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'completed':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+    const classes = {
+      upcoming: 'bg-blue-100 text-blue-800 border-blue-200',
+      ongoing: 'bg-green-100 text-green-800 border-green-200',
+      completed: 'bg-gray-100 text-gray-800 border-gray-200'
+    };
+    return classes[status] || classes.completed;
   };
 
-  // Get event type badge color classes
   const getTypeBadgeClass = (type) => {
-    switch (type) {
-      case 'workshop':
-        return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'seminar':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'competition':
-        return 'bg-red-100 text-red-800 border-red-200';
-      default:
-        return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-    }
+    const classes = {
+      workshop: 'bg-purple-100 text-purple-800 border-purple-200',
+      seminar: 'bg-orange-100 text-orange-800 border-orange-200',
+      competition: 'bg-red-100 text-red-800 border-red-200'
+    };
+    return classes[type] || 'bg-indigo-100 text-indigo-800 border-indigo-200';
   };
 
-  // Format date for display
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
-
-  // Event Card Component
-  const EventCard = ({ event }) => {
-    const isUpcoming = event.status === 'upcoming';
-    const buttonText = isUpcoming ? 'Join Event' : 'View Details';
-    const buttonClass = isUpcoming 
-      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-      : 'bg-gray-600 hover:bg-gray-700 text-white';
-
-    return (
-      <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-200 overflow-hidden">
-        <div className="p-6">
-          {/* Event Header */}
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
-            <h3 className="text-xl font-semibold text-gray-900 line-clamp-2">
-              {event.title}
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusBadgeClass(event.status)}`}>
-                {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-              </span>
-              <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getTypeBadgeClass(event.type)}`}>
-                {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
-              </span>
-            </div>
-          </div>
-
-          {/* Date and Time */}
-          <div className="mb-4">
-            <div className="flex items-center text-gray-600 mb-1">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <span className="text-sm font-medium">{formatDate(event.date)}</span>
-            </div>
-            <div className="flex items-center text-gray-600">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="text-sm">{event.time}</span>
-            </div>
-          </div>
-
-          {/* Description */}
-          <p className="text-gray-700 text-sm mb-6 line-clamp-3">
-            {event.description}
-          </p>
-
-          {/* Action Button */}
-          <button 
-            className={`w-full px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${buttonClass}`}
-            onClick={() => {
-              // Placeholder click handler
-              console.log(`${buttonText} clicked for event: ${event.title}`);
-            }}
-          >
-            {buttonText}
-          </button>
-        </div>
-      </div>
-    );
-  };
+  const formatDate = (dateString) => new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Page Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            PACE IEEE Events
-          </h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">PACE IEEE Events</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Discover and participate in our exciting workshops, seminars, competitions, and networking events.
             Stay connected with the IEEE Student Branch community.
           </p>
         </div>
 
-        {/* Filter Section - Placeholder for future implementation */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            <div className="flex flex-wrap gap-2">
-              <button className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 transition-colors">
-                All Events
-              </button>
-              <button className="px-4 py-2 text-sm font-medium text-gray-600 bg-white rounded-md hover:bg-gray-100 transition-colors border border-gray-200">
-                Upcoming
-              </button>
-              <button className="px-4 py-2 text-sm font-medium text-gray-600 bg-white rounded-md hover:bg-gray-100 transition-colors border border-gray-200">
-                Past Events
-              </button>
-            </div>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search events..."
-                className="pl-10 pr-4 py-2 w-64 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+            <div className="flex flex-wrap gap-3">
+              {[['all', 'All Events'], ['upcoming', 'Upcoming'], ['past', 'Past Events']].map(([filter, label]) => (
+                <button
+                  key={filter}
+                  onClick={() => handleFilterClick(filter)}
+                  className={`px-6 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                    activeFilter === filter
+                      ? 'text-blue-600 bg-blue-100 border-2 border-blue-200 shadow-md'
+                      : 'text-gray-600 bg-white hover:bg-gray-100 border-2 border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  {label} ({filter === 'all' ? events.length : events.filter(event => 
+                    filter === 'upcoming' ? new Date(event.date) >= currentDate : new Date(event.date) < currentDate
+                  ).length})
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Events Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {sampleEvents.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </div>
+        {filteredEvents.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            {filteredEvents.map((event) => (
+              <div 
+                key={event.id}
+                className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 overflow-hidden transform hover:-translate-y-1 cursor-pointer"
+                onClick={() => handleEventClick(event)}
+              >
+                <div className="p-6 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+                    <h3 className="text-xl font-semibold text-gray-900 line-clamp-2 hover:text-blue-600 transition-colors">
+                      {event.title}
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadgeClass(event.status)}`}>
+                        {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                      </span>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getTypeBadgeClass(event.type)}`}>
+                        {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
+                      </span>
+                    </div>
+                  </div>
 
-        {/* No Events Message - Hidden for now since we have sample data */}
-        {sampleEvents.length === 0 && (
-          <div className="text-center py-12">
-            <div className="mx-auto h-24 w-24 text-gray-400 mb-4">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-gray-600">
+                      <svg className="w-5 h-5 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+                      </svg>
+                      <span className="text-sm font-medium">{formatDate(event.date)}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <svg className="w-5 h-5 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+                      </svg>
+                      <span className="text-sm">{event.time}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-gray-700 text-sm mb-6 line-clamp-3 leading-relaxed">{event.description}</p>
+                  <button
+                    className={`w-full px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform hover:scale-105 ${
+                      event.status === 'upcoming' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-600 hover:bg-gray-700 text-white'
+                    }`}
+                    onClick={(e) => { e.stopPropagation(); handleEventClick(event); }}
+                  >
+                    {event.status === 'upcoming' ? 'Join Event' : 'View Details'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <div className="mx-auto h-24 w-24 text-gray-400 mb-6">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-full h-full">
+                <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No events available
-            </h3>
-            <p className="text-gray-500">
-              Check back soon for upcoming IEEE Student Branch events.
-            </p>
+            <h3 className="text-xl font-medium text-gray-900 mb-2">No events found</h3>
+            <p className="text-gray-500 mb-6">No events match the current filter. Try selecting a different filter or check back soon for new events.</p>
+            <button onClick={() => handleFilterClick('all')} className="px-6 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 transition-colors">
+              Show All Events
+            </button>
           </div>
         )}
       </div>
+
+      {isModalOpen && selectedEvent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedEvent.title}</h2>
+                  <div className="flex flex-wrap gap-2">
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusBadgeClass(selectedEvent.status)}`}>
+                      {selectedEvent.status.charAt(0).toUpperCase() + selectedEvent.status.slice(1)}
+                    </span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getTypeBadgeClass(selectedEvent.type)}`}>
+                      {selectedEvent.type.charAt(0).toUpperCase() + selectedEvent.type.slice(1)}
+                    </span>
+                  </div>
+                </div>
+                <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 transition-colors">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+                  </svg>
+                </button>
+              </div>
+              <div className="space-y-4 mb-6">
+                <div className="flex items-center text-gray-700">
+                  <svg className="w-5 h-5 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+                  </svg>
+                  <span className="font-medium">{formatDate(selectedEvent.date)}</span>
+                </div>
+                <div className="flex items-center text-gray-700">
+                  <svg className="w-5 h-5 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+                  </svg>
+                  <span>{selectedEvent.time}</span>
+                </div>
+              </div>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
+                <p className="text-gray-700 leading-relaxed">{selectedEvent.description}</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button className={`flex-1 px-6 py-3 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  selectedEvent.status === 'upcoming' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-600 hover:bg-gray-700 text-white'
+                }`}>
+                  {selectedEvent.status === 'upcoming' ? 'Register for Event' : 'View Event Details'}
+                </button>
+                <button onClick={closeModal} className="flex-1 px-6 py-3 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
